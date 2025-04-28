@@ -1,58 +1,34 @@
-function states_estimated = run_observer(vp_actual_measurements,VSUBJECTS_VALID,nominal,n_VP,H,I,tran_time,parameters_known,min_sim_time,st,mt)
+function states_estimated = run_observer(vp_actual_measurements,nominal,n_VP,H,I,tran_time,min_sim_time,st,mt)
+    
+    % Function to estimate states using linear observer (Luenberger
+    % observer)
+    
+    alpha_u = nominal(1);
+    alpha_h = nominal(2);
+    K = nominal(3);
+    BV0 = nominal(11);
+    HCT0 = nominal(12);
     
     %Use Butterworth poles for the Observer
     fc = 300;
     fs = 1000;
     [~,ppp,~] = butter(3,fc/(fs/2));
-
-    if ~parameters_known
-        alpha_u = nominal(1);
-        alpha_h = nominal(2);
-        K = nominal(3);
-        BV0 = nominal(11);
-        HCT0 = nominal(12);
-
-        %Plant Dynamics+
-        A = [-K 1 -1; 0 0 -K/(1+alpha_h); 0 0 0 ];
-        C = [1/BV0 0 0];
-        
-        %Find Observer Gains
-        L =  place(A',C',[ppp(1) ppp(2) ppp(3)]);
-        l1 = L(1);
-        l2 = L(2);
-        l3 = L(3);
-    end
-
-    VSUBJECTS_NAT = hr_scale_parameters(VSUBJECTS_VALID);
     
-   
+    %Plant Dynamics+
+    A = [-K 1 -1; 0 0 -K/(1+alpha_h); 0 0 0 ];
+    C = [1/BV0 0 0];
     
-    
+    %Find Observer Gains
+    L =  place(A',C',[ppp(1) ppp(2) ppp(3)]);
+    l1 = L(1);
+    l2 = L(2);
+    l3 = L(3);
     
     %For each VP, find the observed states and store into a string
     for i = 1:n_VP
         field = sprintf('subject_%d', i);
         this_VP_time = length(vp_actual_measurements.(field).y_true)*mt;
         y = vp_actual_measurements.(field).y_true;
-
-        if parameters_known
-            alpha_u = VSUBJECTS_NAT(i,1);
-            alpha_h = VSUBJECTS_NAT(i,2);
-            K = VSUBJECTS_NAT(i,3);
-            BV0 = VSUBJECTS_NAT(i,11);
-            HCT0 = VSUBJECTS_NAT(i,12);
-
-            %Plant Dynamics+
-            A = [-K 1 -1; 0 0 -K/(1+alpha_h); 0 0 0 ];
-            C = [1/BV0 0 0];
-
-            %Find Observer Gains
-            L =  place(A',C',[ppp(1) ppp(2) ppp(3)]);
-            l1 = L(1);
-            l2 = L(2);
-            l3 = L(3);
-        end
-
         %Sanity Check
 %         if length(y) ~= floor(this_VP_time/mt)
 %             fprintf('Error - Stop Simulation - Lengths not equal in Observer')
@@ -67,7 +43,6 @@ function states_estimated = run_observer(vp_actual_measurements,VSUBJECTS_VALID,
         x3_hat = 0;
         x1_dot_hat = 0;
         for j = 2:this_VP_time/st
-
             if j<tran_time/st
                 inf = 0;
             else
@@ -95,8 +70,6 @@ function states_estimated = run_observer(vp_actual_measurements,VSUBJECTS_VALID,
         end
         x_hat = [x1_hat x2_hat x3_hat x1_dot_hat];
         states_estimated.(field).x_hat = x_hat;
-
-       
         
     end
     

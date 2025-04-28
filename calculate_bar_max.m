@@ -1,6 +1,6 @@
-function [bar_max,min_sim_time,max_sim_time] = calculate_bar_max(vp_actual_measurements,vp_bar_states,n_VP,tran_time,st,mt)
+function [bar_max,min_sim_time,max_sim_time] = calculate_bar_max(vp_actual_measurements,vp_bar_states,n_VP,st,mt)
 
-%Find Maximum Actual Simulation Time Across all VPs
+                %Find Maximum Actual Simulation Time Across all VPs
                 max_sim_time = 0;
                 min_sim_time = 1e8;
                 for i=1:n_VP
@@ -37,34 +37,11 @@ function [bar_max,min_sim_time,max_sim_time] = calculate_bar_max(vp_actual_measu
                     x1_dot_bar_max(j) = select_percentile(x1_dot_bar_comp,0.1,'descend');
                     x2_dot_bar_max(j) = select_percentile(x2_dot_bar_comp,0.1,'descend');
                 end
-
-                %Extrapolation
-                t = tran_time/st:1:floor(this_VP_time/st);
-                x1_bar_trunc = x1_bar_max(tran_time/st:floor(this_VP_time/st));
-                p = polyfit(t,x1_bar_trunc,2);
-                t_aug = tran_time/st:1:max_sim_time/st';
-                x1_bar_extrapol = [x1_bar_max(1:tran_time/st-1) polyval(p,t_aug)];
-
-                x2_bar_trunc = x2_bar_max(tran_time/st:floor(this_VP_time/st));
-                p = polyfit(t,x2_bar_trunc,2);
-                t_aug = tran_time/st:1:max_sim_time/st';
-                x2_bar_extrapol = [x2_bar_max(1:tran_time/st-1) polyval(p,t_aug)];
-
-                x1_dot_bar_trunc = x1_dot_bar_max(tran_time/st:floor(this_VP_time/st));
-                p = polyfit(t,x1_dot_bar_trunc,2);
-                t_aug = tran_time/st:1:max_sim_time/st';
-                x1_dot_bar_extrapol = [x1_dot_bar_max(1:tran_time/st-1) polyval(p,t_aug)];
-
-                x2_dot_bar_trunc = x2_dot_bar_max(tran_time/st:floor(this_VP_time/st));
-                p = polyfit(t,x2_dot_bar_trunc,2);
-                t_aug = tran_time/st:1:max_sim_time/st';
-                x2_dot_bar_extrapol = [x2_dot_bar_max(1:tran_time/st-1) polyval(p,t_aug)];
                 
-                
-                bar_max.x1_bar = x1_bar_extrapol;
-                bar_max.x2_bar = x2_bar_extrapol;
-                bar_max.x1_dot_bar = x1_dot_bar_extrapol;
-                bar_max.x2_dot_bar = x2_dot_bar_extrapol;
+                bar_max.x1_bar = x1_bar_max;
+                bar_max.x2_bar = x2_bar_max;
+                bar_max.x1_dot_bar = x1_dot_bar_max;
+                bar_max.x2_dot_bar = x2_dot_bar_max;
                 
                 %Sanity Check Plot for bar states
                 % figure(1)

@@ -1,5 +1,6 @@
-function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,parameters_known,noise,st,mt)
+function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,noise,st,mt)
     
+    % Function to simulate EKF for state estimation
     store_only_hemorrhage_state = 1;
     
     HCT_measured = measurements.HCT;
@@ -14,26 +15,14 @@ function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     H0_std = std(theta(:,12));
     
     theta_s = nominal;
-
-    if parameters_known
-        alpha_u = VSUBJECTS_NAT(SN,1);
-        alpha_h = VSUBJECTS_NAT(SN,2);
-        k = VSUBJECTS_NAT(SN,3);
-        V0 = VSUBJECTS_NAT(SN,11);
-        H0 = VSUBJECTS_NAT(SN,12);
-
-        theta_s(:,1) = VSUBJECTS_NAT(SN,1);
-        theta_s(:,2) = VSUBJECTS_NAT(SN,2);
-        theta_s(:,3) = VSUBJECTS_NAT(SN,3);
-        theta_s(:,11) = VSUBJECTS_NAT(SN,11);
-        theta_s(:,12) = VSUBJECTS_NAT(SN,12);
-    else
-        alpha_u = theta_s(:,1);
-        alpha_h = theta_s(:,2);
-        k = theta_s(:,3);
-        V0 = theta_s(:,11);
-        H0 = theta_s(:,12);
-    end
+    
+    % Define Parameter
+    
+    alpha_u = theta_s(:,1);
+    alpha_h = theta_s(:,2);
+    k = theta_s(:,3);
+    V0 = theta_s(:,11);
+    H0 = theta_s(:,12);
     
     %Get True States
     
@@ -59,11 +48,7 @@ function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     P = [0.01 0 0 0; 0 0.01 0 0;0 0 0.01 0;0 0 0 0.01];
     %Noise Covariance
     
-    if noise==0
-        R = 1e-4;
-    else
-        R = 0.1*noise;
-    end
+    R = 0.1*noise;
     
     JI = Irate; 
     
@@ -77,7 +62,6 @@ function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     
         %Prediction
         x_P = NLF_hr_transition_model(x,theta_s,JI(i-1),st);
-
 
     
         J = [-x(1) 0 0 0; (-x(3)/(1+alpha_h))+(JI(i-1)/(1+alpha_u)) -k*JI(i-1)/(1+alpha_u)^2 k*x(3)/(1+alpha_h)^2 0; 0 0 0.1 0];
@@ -120,9 +104,6 @@ function H_est = run_EKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
         H_est = x_hat(:,3);
     end
     
-    % figure(2)
-    % hold on;
-    % plot(h_state)
     
     
     t = 0:st:alltime-st;

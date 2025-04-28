@@ -1,5 +1,6 @@
-function theta3 = parameter_estimator(SN,H,I,trantime,theta3_max,measurements,VSUBJECTS_NAT,nominal,parameters_known,noise,st,mt)
-
+function theta3 = parameter_estimator(SN,H,I,trantime,theta3_max,measurements,VSUBJECTS_NAT,nominal,noise,st,mt)
+    
+    % Function to estimate parameter by quantifying parameter uncertainity
     HCT_measured = measurements.HCT;
     z_dot = measurements.z_dot;
     v = measurements.v;
@@ -12,26 +13,6 @@ function theta3 = parameter_estimator(SN,H,I,trantime,theta3_max,measurements,VS
     k_n = theta_s(:,3);
     BV0_n = theta_s(:,11);
     H0_n = theta_s(:,12);
-
-    if parameters_known
-        alpha_u = VSUBJECTS_NAT(SN,1);
-        alpha_h = VSUBJECTS_NAT(SN,2);
-        k = VSUBJECTS_NAT(SN,3);
-        V0 = VSUBJECTS_NAT(SN,11);
-        H0 = VSUBJECTS_NAT(SN,12);
-
-        theta_s(:,1) = VSUBJECTS_NAT(SN,1);
-        theta_s(:,2) = VSUBJECTS_NAT(SN,2);
-        theta_s(:,3) = VSUBJECTS_NAT(SN,3);
-        theta_s(:,11) = VSUBJECTS_NAT(SN,11);
-        theta_s(:,12) = VSUBJECTS_NAT(SN,12);
-    else
-        alpha_u = theta_s(:,1);
-        alpha_h = theta_s(:,2);
-        k = theta_s(:,3);
-        V0 = theta_s(:,11);
-        H0 = theta_s(:,12);
-    end
 
     sim_time = length(HCT_measured)*mt;
     

@@ -1,4 +1,4 @@
-function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,parameters_known,noise,st,mt)
+function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,noise,st,mt)
     
     store_only_hemorrhage_state = 1;
     
@@ -15,25 +15,11 @@ function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     
     theta_s = nominal;
     
-    if parameters_known
-        alpha_u = VSUBJECTS_NAT(SN,1);
-        alpha_h = VSUBJECTS_NAT(SN,2);
-        k = VSUBJECTS_NAT(SN,3);
-        V0 = VSUBJECTS_NAT(SN,11);
-        H0 = VSUBJECTS_NAT(SN,12);
-
-        theta_s(:,1) = VSUBJECTS_NAT(SN,1);
-        theta_s(:,2) = VSUBJECTS_NAT(SN,2);
-        theta_s(:,3) = VSUBJECTS_NAT(SN,3);
-        theta_s(:,11) = VSUBJECTS_NAT(SN,11);
-        theta_s(:,12) = VSUBJECTS_NAT(SN,12);
-    else
-        alpha_u = theta_s(:,1);
-        alpha_h = theta_s(:,2);
-        k = theta_s(:,3);
-        V0 = theta_s(:,11);
-        H0 = theta_s(:,12);
-    end
+    alpha_u = theta_s(:,1);
+    alpha_h = theta_s(:,2);
+    k = theta_s(:,3);
+    V0 = theta_s(:,11);
+    H0 = theta_s(:,12);
     
     %Get True States
     
@@ -43,7 +29,7 @@ function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     
     ic = [0 0];
     
-    %Uncmment if you need pts
+    %Uncomment if you need pts
     %[~,HCT_true,x_T] = NLF_hr_true_model(theta(SN,:),Hrate,Irate,st,ic);
     
     % EKF Code Starts
@@ -57,8 +43,8 @@ function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     
     %P = 0.1*[0.001 0 0 0;0 0.001 0 0;0 0 0.001 0;0 0 0 0.001]; %State Covriance Matrix
     P = 10*[0.001 0 0 0;0 0.001 0 0;0 0 0.001 0;0 0 0 0.001];
-    %Noise Covariance
     
+    %Noise Covariance
     R = 0.1*noise;
     
     JI = Irate; 
@@ -81,13 +67,14 @@ function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
     Wc(1)=Wc(1)+(1-alpha^2+beta);               %weights for covariance
     c=sqrt(c);
 
-    
+    % UKF State Estimation
+
     for i = 2:length(Irate)
         
         X = sigmas(x, P, c);
         
         x_bar = zeros(L, 1);
-    
+            
         for j = 1:2*L+1
             x_bar = x_bar + Wm(j)*NLF_hr_transition_model(X(:, j),theta_s,JI(i-1),st)';
         end
@@ -136,71 +123,17 @@ function H_est = run_UKF(SN,H,I,trantime,measurements,VSUBJECTS_NAT,nominal,para
         
     end
     
-if store_only_hemorrhage_state == 1
-    H_est = h_state;
-else
-    H_est = x_hat(:,3);
-end
-    
-    % figure(2)
-    % hold on;
-    % plot(h_state)
-    
-    t = 0:st:alltime-st;
-  
-% figure(3)
-% figure('units','normalized','outerposition',[0 0 1 1])
-% subplot(2,3,1)
-% plot(t,Irate)
-% hold on;
-% plot(t,-Hrate)
-% xlabel('Time (min)')
-% ylabel('Fluid Profile (L/min)')
-% legend('Infusion','Hemorrhage')
-% 
-% subplot(2,3,2)
-% plot(t,x_T(:,1))
-% hold on;
-% plot(t,x_hat(:,1))
-% xlabel('Time (min)')
-% ylabel('x1 true vs x1 estimated')
-% legend('x1 true','x1 est')
-% 
-% subplot(2,3,3)
-% plot(t,x_T(:,2))
-% hold on;
-% plot(t,x_hat(:,2))
-% xlabel('Time (min)')
-% ylabel('x2 true vs x2 estimated')
-% legend('x2 true','x2 est')
-% subplot(2,3,4)
-% plot(t,Hrate)
-% hold on;
-% plot(t,x_hat(:,3))
-% xlabel('Time (min)')
-% ylabel('x3 true vs x3 estimated')
-% legend('x3 true','x3 est')
-% subplot(2,3,5)
-% plot(t,x_T(:,3))
-% hold on;
-% plot(t,x_hat(:,4))
-% ylabel('x4 true vs x4 estimated')
-% legend('x4 true','x4 est')
-% 
-% subplot(2,3,6)
-% plot(t,HCT_true)
-% hold on;
-% plot(t,HCT_hat)
-% xlabel('Time (min)')
-% ylabel('HCT true vs HCT estimated')
-% legend('HCT true','HCT est')
-
-
-    
-
+    if store_only_hemorrhage_state == 1
+        H_est = h_state;
+    else
+        H_est = x_hat(:,3);
+    end
+ 
 
     
 end
+
+% Function to sample sigma points for UKF
 
 function X = sigmas(x, P, c)
     L = length(x);

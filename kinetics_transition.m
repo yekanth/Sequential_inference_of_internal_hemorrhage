@@ -1,6 +1,7 @@
-function [states,measurements,measurements_TN_FP] = kinetics_transition(req_params,H,I,trantime,per_BV_critical,noise,noise_type,filter_measurements,st)
-        
+function [states,measurements,measurements_TN_FP] = kinetics_transition(req_params,H,I,trantime,per_BV_critical,noise,noise_type,st)
     
+    
+    filter_measurements = 1;
     
     alpha_u = req_params(1);
     alpha_h = req_params(2);

@@ -1,4 +1,7 @@
-function [states,measurements,measurements_TN_FP] = calculate_sts_mts(VSUBJECTS_VALID,noise,noise_type,per_BV_critical,model_known,H,I,tran_time,filter_measurements,st,mt)
+function [states,measurements,measurements_TN_FP] = calculate_sts_mts(VSUBJECTS_VALID,noise,noise_type,per_BV_critical,model_known,H,I,tran_time,st,mt)
+    
+    % Function to calculate states and measurements using VP parameters and
+    % state transition models
     
     n_VP = length(VSUBJECTS_VALID(:,1));
     
@@ -6,7 +9,7 @@ function [states,measurements,measurements_TN_FP] = calculate_sts_mts(VSUBJECTS_
         VSUBJECTS_VALID = hr_scale_parameters(VSUBJECTS_VALID);
         req_params = [VSUBJECTS_VALID(:,1) VSUBJECTS_VALID(:,2) VSUBJECTS_VALID(:,3) VSUBJECTS_VALID(:,11) VSUBJECTS_VALID(:,12)];
         BV = req_params(4);
-        [states,measurements,measurements_TN_FP] = kinetics_transition(req_params,H,I,tran_time,per_BV_critical,noise,noise_type,filter_measurements,st); 
+        [states,measurements,measurements_TN_FP] = kinetics_transition(req_params,H,I,tran_time,per_BV_critical,noise,noise_type,st); 
     end
 
     %Resampling Measurements
